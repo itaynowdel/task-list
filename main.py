@@ -20,10 +20,21 @@ def get_task(task_id: int):
 @app.post("/tasks")
 def add_task(task: dict):
     global counter
+    
+    priority = task.get("priority") #יצירת משתנה חדש בשם priority שמקבל את הערך של המפתח "priority" מהמשימה שהתקבלה. אם המפתח לא קיים, הערך יהיה None.
+    if priority == None: #בודק אם לא קיבל ערך נותן לו 2 כברירת מחדל
+        priority = 2
+    if type(priority) != int: #בודק שמדובר בINT אחרת מחזיר שגיאה
+        raise HTTPException(status_code=400, detail="Priority must be an integer") 
+    if priority < 1 or priority > 3: #בודק את הטווח
+        raise HTTPException(status_code=400, detail="Priority must be between 1 and 3")
+      
+        
     new_task = {
         "id": counter,
         "title": task.get("title"),
-        "owner": task.get("owner")
+        "owner": task.get("owner"),
+        "priority": priority #הוספת שדה
     }
     tasks.append(new_task)
     counter += 1
