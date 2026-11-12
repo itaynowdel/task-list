@@ -7,7 +7,20 @@ tasks = []
 counter = 1
 
 @app.get("/tasks")
-def get_tasks():
+def get_tasks(priority: int = None): #בודק האם קיבלנו אופציה לסינון
+    
+    if priority is not None: #אם קיבלנו ערך לסינון
+        if type(priority) != int: #בודק שמדובר בINT אחרת מחזיר שגיאה
+            raise HTTPException(status_code=400, detail="Priority must be an integer")
+        if priority < 1 or priority > 3: #בודק את הטווח
+            raise HTTPException(status_code=400, detail="Priority must be between 1 and 3")
+        
+        tasks_filter = [] #יצירת מערך של משימות מסוננות
+        for task in tasks:
+            if task["priority"] == priority: #לולאת FOR על כל המשימות הקיימות
+                tasks_filter.append(task) # אם החשיבות של המשימה שווה למה שהוזן, נוסיף לרשימת פילטר
+        
+        return tasks_filter
     return tasks
 
 @app.get("/tasks/{task_id}")
@@ -20,10 +33,21 @@ def get_task(task_id: int):
 @app.post("/tasks")
 def add_task(task: dict):
     global counter
+    
+    priority = task.get("priority") #יצירת משתנה חדש בשם priority שמקבל את הערך של המפתח "priority" מהמשימה שהתקבלה. אם המפתח לא קיים, הערך יהיה None.
+    if priority == None: #בודק אם לא קיבל ערך נותן לו 2 כברירת מחדל
+        priority = 2
+    if type(priority) != int: #בודק שמדובר בINT אחרת מחזיר שגיאה
+        raise HTTPException(status_code=400, detail="Priority must be an integer") 
+    if priority < 1 or priority > 3: #בודק את הטווח
+        raise HTTPException(status_code=400, detail="Priority must be between 1 and 3")
+      
+        
     new_task = {
         "id": counter,
         "title": task.get("title"),
-        "owner": task.get("owner")
+        "owner": task.get("owner"),
+        "priority": priority #הוספת שדה
     }
     tasks.append(new_task)
     counter += 1
